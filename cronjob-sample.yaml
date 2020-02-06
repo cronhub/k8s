@@ -1,0 +1,18 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: daily-backup
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: daily-backup
+            image: busybox
+            args:
+            - /bin/sh
+            - -c
+            - date; echo Hello I am backing up your database
+          restartPolicy: OnFailure

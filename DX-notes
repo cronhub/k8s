@@ -1,0 +1,22 @@
+1. Create a new deployment and service
+2.  k port-forward service/cronhub 8899:80 # forward the port to the service
+
+
+
+*****
+A Kubernetes Service that identifies a set of Pods using label selectors. Unless mentioned otherwise,
+Services are assumed to have virtual IPs only routable within the cluster network.
+
+Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster.
+ Traffic routing is controlled by rules defined on the Ingress resource.
+
+    internet
+        |
+   [ Ingress ]
+   --|-----|--
+   [ Services ]
+
+
+An Ingress can be configured to give Services externally-reachable URLs, load balance traffic, terminate SSL / TLS, and offer name based virtual hosting. An Ingress controller is responsible for fulfilling the Ingress,
+ usually with a load balancer, though it may also configure your edge router or additional frontends to help handle the traffic.
+
