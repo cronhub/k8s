@@ -1,13 +1,13 @@
 # k8s : Simple service to expose resources running on Kubernetes clusters
 
-# Install 
+## Install
 
 go get github.com/cronhub/k8s
 
-# Build
+## Build
 
 make build
 
-# Run
+## Run
 
 ./bin/k8s

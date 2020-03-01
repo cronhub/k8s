@@ -1,10 +1,10 @@
-
 package main
 
 import (
 	"flag"
 	"fmt"
 	"path/filepath"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -32,15 +32,15 @@ func main() {
 		panic(err)
 	}
 
-	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+	cronjobsClient := clientset.BatchV1beta1().CronJobs(apiv1.NamespaceAll)
 
-	// List Deployments
-	fmt.Printf("Listing deployments in namespace %q:\n", apiv1.NamespaceDefault)
-	list, err := deploymentsClient.List(metav1.ListOptions{})
+	// List all running cronjobs
+	fmt.Printf("Listing cronjobs in all namespaces \n")
+	cronlist, err := cronjobsClient.List(metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
-	for _, d := range list.Items {
-		fmt.Printf(" * %s (%d replicas)\n", d.Name, *d.Spec.Replicas)
+	for _, d := range cronlist.Items {
+		fmt.Printf(" * %s %s %s %d \n", d.Name, d.Spec.Schedule, d.Status.LastScheduleTime, *d.Spec.FailedJobsHistoryLimit)
 	}
 }
