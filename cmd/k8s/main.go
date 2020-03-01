@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"path/filepath"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -13,7 +14,24 @@ import (
 	// "k8s.io/client-go/rest"
 )
 
-func main() {
+func cronjobs(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "Cronjobs \n")
+
+	clientset := getClientSet()
+	cronjobsClient := clientset.BatchV1beta1().CronJobs(apiv1.NamespaceAll)
+
+	// List all running cronjobs
+	// fmt.Printf("Listing cronjobs in all namespaces \n")
+	cronlist, err := cronjobsClient.List(metav1.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+	for _, d := range cronlist.Items {
+		fmt.Fprintf(w, " * %s %s %s %d \n", d.Name, d.Spec.Schedule, d.Status.LastScheduleTime, *d.Spec.FailedJobsHistoryLimit)
+	}
+}
+
+func getClientSet() *kubernetes.Clientset {
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -31,16 +49,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	return clientset
+}
 
-	cronjobsClient := clientset.BatchV1beta1().CronJobs(apiv1.NamespaceAll)
+func main() {
 
-	// List all running cronjobs
-	fmt.Printf("Listing cronjobs in all namespaces \n")
-	cronlist, err := cronjobsClient.List(metav1.ListOptions{})
-	if err != nil {
-		panic(err)
-	}
-	for _, d := range cronlist.Items {
-		fmt.Printf(" * %s %s %s %d \n", d.Name, d.Spec.Schedule, d.Status.LastScheduleTime, *d.Spec.FailedJobsHistoryLimit)
-	}
+	fmt.Printf("Starting the server now on http://localhost:8090 \n")
+	http.HandleFunc("/", cronjobs)
+
+	http.ListenAndServe(":8090", nil)
+
 }
