@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,6 +16,11 @@ import (
 	"k8s.io/client-go/util/homedir"
 	// "k8s.io/client-go/rest"
 )
+
+type PageVariables struct {
+	Date string
+	Time string
+}
 
 func cronjobs(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "Cronjobs \n")
@@ -26,6 +34,22 @@ func cronjobs(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+
+	now := time.Now()
+	HomePageVars := PageVariables{
+		Date: now.Format("02-01-2006"),
+		Time: now.Format("16:04:05"),
+	}
+	t, err := template.ParseFiles("ui/public/index.html")
+	if err != nil {
+		log.Print("template parsing error: ", err)
+	}
+
+	err = t.Execute(w, HomePageVars)
+	if err != nil {
+		log.Print("template executing error: ", err)
+	}
+
 	for _, d := range cronlist.Items {
 		fmt.Fprintf(w, " * %s %s %s %d \n", d.Name, d.Spec.Schedule, d.Status.LastScheduleTime, *d.Spec.FailedJobsHistoryLimit)
 	}
@@ -54,9 +78,9 @@ func getClientSet() *kubernetes.Clientset {
 
 func main() {
 
-	fmt.Printf("Starting the server now on http://localhost:8090 \n")
+	fmt.Printf("Starting the server now on http://localhost:8080 \n")
 	http.HandleFunc("/", cronjobs)
 
-	http.ListenAndServe(":8090", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }
