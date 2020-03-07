@@ -22,6 +22,11 @@ type PageVariables struct {
 	Time string
 }
 
+const (
+	defaultDateFormat = "02-01-2006"
+	defaultTimeFormat = "16:04:05"
+)
+
 func cronjobs(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "Cronjobs \n")
 
@@ -36,18 +41,18 @@ func cronjobs(w http.ResponseWriter, req *http.Request) {
 	}
 
 	now := time.Now()
-	HomePageVars := PageVariables{
-		Date: now.Format("02-01-2006"),
-		Time: now.Format("16:04:05"),
+	homePageVars := PageVariables{
+		Date: now.Format(defaultDateFormat),
+		Time: now.Format(defaultTimeFormat),
 	}
 	t, err := template.ParseFiles("ui/public/index.html")
 	if err != nil {
-		log.Print("template parsing error: ", err)
+		log.Fatal("template parsing error: ", err)
 	}
 
-	err = t.Execute(w, HomePageVars)
+	err = t.Execute(w, homePageVars)
 	if err != nil {
-		log.Print("template executing error: ", err)
+		log.Fatal("template executing error: ", err)
 	}
 
 	for _, d := range cronlist.Items {
